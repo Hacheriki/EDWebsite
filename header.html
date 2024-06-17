@@ -1,0 +1,53 @@
+<style>
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.bold {
+    font-weight: 800;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script src="scripts/jq.js"></script>
+<header>
+        <h1>Мой магазин</h1>
+        <nav>
+            <ul>
+                <li><a id="toIndex" href="index.html">Главная страница</a></li>
+                <li><a id="toCategories" href="categories.html">Категории</a></li>
+                <li><a id="toCart" href="cart.html">Корзина</a></li>
+                <li><a id="toAdmin" href="admin.html">Админ-панель</a></li>
+            </ul>
+        </nav>
+</header>
+<script>
+    console.log(document.location.pathname)
+    if (document.location.pathname == "/edwebsite/index.html") {
+        $("#toIndex").toggleClass("bold")
+    } else if (document.location.pathname == "/edwebsite/categories.html") {
+        $("#toCategories").toggleClass("bold")
+    } else if (document.location.pathname == "/edwebsite/cart.html") {
+        $("#toCart").toggleClass("bold")
+    } else if (document.location.pathname == "/edwebsite/admin.html") {
+        $("#toAdmin").toggleClass("bold")
+    }
+</script>

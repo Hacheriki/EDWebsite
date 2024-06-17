@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой магазин</title>
+    <link rel="stylesheet" href="index_styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+    <script src="scripts/jq.js"></script>
+</head>
+<script id="item-template" type="text/x-handlebars-template">
+
+    {{#if products.length}}
+        {{#each products}}
+            <a href='item.html?id={{product_id}}' class='product'>
+                <div>
+                    <img src='{{image_url}}'>
+                    <h3>{{name}}</h3>
+                    <p>Цена: {{price}} ₽</p>
+                </div>
+            </a>
+        {{/each}}
+    {{else}}
+        <p>Нет новых продуктов</p>
+    {{/if}}
+</script>
+<body>
+<div id="header"></div>
+<h2 class="featured-text">Новые товары</h2>
+    <section class="featured-products">
+
+    </section>
+</body>
+<script>
+    const template = Handlebars.compile(document.querySelector('#item-template').innerHTML);
+
+    const header = $("#header")
+
+    $.get({
+        url: './header.html',
+        success: function (data) {
+            header.html(data)
+        }
+    })
+
+    const featuredProducts = $(".featured-products")
+    $.get({
+        url: './api/getFeaturedProducts.php',
+        success: function (data) {
+            console.log(data)
+            featuredProducts.html(template({ products: data}))
+        }
+    })
+</script>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Категории товаров</title>
+    <link rel="stylesheet" href="categories_styles.css">
+    <script src="scripts/jq.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+</head>
+<body>
+
+<div id="header"></div>
+    <form action="categories.php" method="GET">
+        <label for="category">Выберите категорию:</label>
+        <select name="category" id="category">
+            <option value="">Все категории</option>
+            <script id="options-template" type="text/x-handlebars-template">
+                {{#each categories}}
+                    <option value="{{category_id}}"> {{name}}</option>
+                {{/each}}
+            </script>
+        </select>
+
+        <label for="maxPrice">Максимальная цена:</label>
+        <input type="number" id="maxPrice" name="maxPrice" min="0">
+
+        <input type="submit" value="Отфильтровать">
+    </form>
+
+    <section id="products" class="products">
+        <script id="product-template" type="text/x-handlebars-template">
+            {{#if products.length}}
+                {{#each products}}
+                    <a href='item.html?id={{product_id}}' class='product-card'>
+                        <div>
+                            <img src='{{image_url}}'>
+                            <h3>{{name}}</h3>
+                            <p>Цена: {{price}} ₽</p>
+                        </div>
+                    </a>
+                {{/each}}
+            {{else}}
+                <p>Нет продуктов по заданным параметрам</p>
+            {{/if}}
+        </script>
+    </section>
+<script>
+    const optionsTemplate = Handlebars.compile(document.querySelector('#options-template').innerHTML);
+    const itemTemplate = Handlebars.compile(document.querySelector('#product-template').innerHTML)
+
+    const header = $("#header")
+
+    $.get({
+        url: './header.html',
+        success: function (data) {
+            header.html(data)
+        }
+    })
+
+    const categories = $("#category")
+    $.get({
+        url: './api/getCategories.php',
+        success: (data) => {
+            categories.append(optionsTemplate({categories: data}))
+            console.log(data)
+        }
+    })
+
+    const productsList = $("#products")
+    $.get({
+        url: './api/filterItems.php',
+        success: function (data) {
+            console.log(data)
+            productsList.html(itemTemplate({ products: data}))
+        }
+    })
+
+    const filterForm = $("form")
+    filterForm.on('submit', function (event) {
+        event.preventDefault()
+
+        $.get({
+            url: './api/filterItems.php',
+            data: filterForm.serialize(),
+            success: function (data) {
+                console.log(data)
+                productsList.html(itemTemplate({ products: data}))
+            }
+        })
+    })
+</script>
+</body>
+</html>

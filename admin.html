@@ -1,0 +1,382 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ панель</title>
+    <link rel='stylesheet' href='styles.css'>
+    <script src="scripts/jq.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+</head>
+<body>
+<div id="header"></div>
+<script>
+    const header = $("#header")
+
+    $.get({
+        url: './header.html',
+        success: function (data) {
+            header.html(data)
+        }
+    })
+</script>
+
+<div class="login-container">
+    <form action="./api/checkPassword.php" method="post" class="login-form">
+        <h2>Вход в админ панель</h2>
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" class="form-control">
+        </div>
+        <input type="submit" value="Войти" class="btn-login">
+    </form>
+</div>
+
+
+
+<div id="adminPanel" style="display: none">
+    <section class="admin-section">
+        <h2>Добавить новую категорию</h2>
+        <form action="add_category.php" method="post" id="categoryForm">
+            <label for="category_name">Имя категории:</label>
+            <input type="text" id="category_name" name="category_name" required><br>
+            <input type="submit" name="submit_category" value="Добавить категорию">
+        </form>
+    </section>
+
+    <section class="admin-section">
+        <div id="form-container">
+
+        </div>
+        <script id="create-form-template" type="text/x-handlebars-template">
+            <h2>Добавить новый продукт</h2>
+            <form id="addProduct">
+                <input hidden name="product_id">
+                <label for="name">Имя продукта:</label>
+                <input type="text" id="name" name="name" required><br>
+                <label for="description">Описание:</label>
+                <textarea id="description" name="description"  required></textarea><br>
+                <label for="price">Цена:</label>
+                <input type="number" id="price" name="price" step="0.01" required><br>
+                <label for="quantity">Количество товара:</label>
+                <input type="number" id="quantity" name="quantity" step="1" required><br>
+                <label for="image_url">Фото товара:</label>
+                <input type="text" id="image_url" name="image_url"  required><br>
+                <label for="is_featured">Продвигать товар на главной:</label>
+                <input type="checkbox" id="is_featured" name="is_featured"><br>
+
+                <label for="category">Категория:</label>
+                <select id="category" name="category">
+                    {{#each categories}}
+                        <option value="{{category_id}}">{{name}}</option>
+                    {{/each}}
+                </select><br>
+                <input type="submit" name="submit" value="Добавить продукт">
+            </form>
+        </script>
+    </section>
+
+    <section class="admin-section">
+        <h2>Существующие продукты</h2>
+        <div id="products-container">
+
+        </div>
+        <script id="products-template" type="text/x-handlebars-template">
+            {{#each products}}
+                <div>
+                    <div class='product-item'>
+                        <h3>{{product_id}}. {{name}}</h3>
+                        <p>Описание: {{description}}</p>
+                        <img src="{{image_url}}">
+                        <p>Цена: {{price}} ₽</p>
+                        <p>Оставшееся количество: {{quantity}}</p>
+                        {{#if is_featured}}
+                            <p>Продвигается: <input type='checkbox' disabled checked></p>
+                        {{else}}
+                            <p>Продвигается: <input type='checkbox' disabled></p>
+                        {{/if}}
+                        <p>Категория: {{category_name}} </p>
+                        <div style="display: flex; gap: 2rem">
+                            <a href='admin.html?edit={{product_id}}' class='action-button edit-button edit-button-items'>Отредактировать</a>
+                            <a href='./api/deleteItem.php?delete={{product_id}}' class='action-button delete-button delete-button-items'>Удалить</a>
+                        </div>
+                    </div>
+
+                    <form style="display: none" class="edit-form product-item">
+                        <input hidden name="product_id" value="{{product_id}}">
+                        <label for="name">Имя продукта:</label>
+                        <input type="text" id="name" name="name" required value="{{name}}"><br>
+                        <label for="description">Описание:</label>
+                        <textarea id="description" name="description"  required>{{description}}</textarea><br>
+                        <label for="price">Цена:</label>
+                        <input type="number" id="price" name="price" step="0.01" required value="{{price}}"><br>
+                        <label for="quantity">Количество товара:</label>
+                        <input type="number" id="quantity" name="quantity" step="1" required value="{{quantity}}"><br>
+                        <label for="image_url">Фото товара:</label>
+                        <input type="text" id="image_url" name="image_url" required value="{{image_url}}"><br>
+                        <label for="is_featured">Продвигать товар на главной:</label>
+                        <input type="checkbox" id="is_featured" name="is_featured" {{#if is_featured}}checked{{/if}}><br>
+                        <label for="category">Категория:</label>
+                        <select id="category" name="category">
+                            {{#each categories}}
+                                <option value="{{category_id}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+                            {{/each}}
+                        </select><br>
+                        <input type="submit" name="submit" value="Отредактировать">
+                    </form>
+                </div>
+
+            {{/each}}
+        </script>
+    </section>
+
+    <section class="admin-section">
+        <h2>Заказы</h2>
+        <div id="orders-container">
+
+        </div>
+        <script id="orders-template" type="text/x-handlebars-template">
+            {{#each orders}}
+                <div class="product-item">
+                    <h3>Номер заказа: {{order_id}}</h3>
+                    <p>Артикул и количество:
+                        {{#each products}}
+                            {{name}} - {{quantity}}
+                        {{/each}}
+                    </p>
+
+                    <p>Номер телефона: {{client_phone}} </p>
+                    <p>{{overall_price}} ₽</p>
+                    {{log 'test'}}
+                    <div style="display: flex; gap: 2rem">
+                    {{#if is_done}}
+                            <p>Статус заказа: Выполнен</p>
+                        {{else}}
+                            <p>Статус заказа: В работе</p>
+                            <a href='./api/markOrder.php?mark_order_done={{order_id}}' class='action-button edit-button edit-buttons-orders'>Отметить как выполненный</a>
+                        {{/if}}
+                        <a href='./api/deleteOrder.php?delete_order={{order_id}}' class='action-button delete-button delete-buttons-orders'>Удалить заказ</a>
+                    </div>
+                </div>
+            {{/each}}
+        </script>
+    </section>
+</div>
+
+<script>
+    const loginForm = $(".login-form")
+    console.log(loginForm)
+    loginForm.on('submit', function (event) {
+        event.preventDefault()
+
+        $.post({
+            url: './api/checkPassword.php',
+            data: loginForm.serialize(),
+            success: (data) => {
+                if (data.response) {
+                    alert("Пароль верный!")
+                    $(".login-container").hide()
+                    $("#adminPanel").show()
+                } else {
+                    alert("Неверный пароль!")
+                }
+            }
+        })
+    })
+
+    const ordersTemplate = Handlebars.compile(document.querySelector('#orders-template').innerHTML);
+    const productsTemplate = Handlebars.compile(document.querySelector('#products-template').innerHTML);
+    const createFormTemplate = Handlebars.compile(document.querySelector('#create-form-template').innerHTML);
+
+    productsContainer = $("#products-container")
+
+    function createProducts() {
+        $.get({
+            url: './api/getItemsWithCategories.php',
+            success: (data) => {
+                let categories = []
+                $.get({
+                    url: './api/getCategories.php',
+                    success: (data) => {
+                        console.log(data)
+                        categories = data
+                    },
+                    async: false
+                })
+                data = data.map((item) => {
+                    item.is_featured = item.is_featured !== "0"
+                    item.categories = categories.map((category) => {
+                        if (item.category_id === category.category_id) {
+                            return {
+                                ...category,
+                                selected: true
+                            }
+                        } else {
+                            return {
+                                ...category,
+                                selected: false
+                            }
+                        }
+                    })
+                    return item;
+                })
+                productsContainer.html(productsTemplate({products: data}))
+                hydrateButtons()
+            }
+        })
+
+        function hydrateButtons() {
+            $(".edit-button-items").on("click", function (event) {
+                event.preventDefault()
+
+                const parentContainer = $(this).parent().parent()
+                parentContainer.hide()
+                parentContainer.parent().find("form").show()
+            })
+
+            $(".edit-form").on('submit', function (event) {
+                event.preventDefault()
+
+                $.post({
+                    url: './api/editItem.php',
+                    data: $(this).serialize(),
+                    success: (data) => {
+                        alert(data.response)
+                        createProducts()
+                    }
+                })
+            })
+
+            $(".delete-button-items").on("click", function (event) {
+                event.preventDefault()
+                $.get({
+                    url: this.href,
+                    success: (data) => {
+                        alert(data.response)
+                        $(this).parent().parent().remove()
+                    }
+                })
+            })
+        }
+    }
+
+    $.get({
+        url: './api/getOrders.php',
+        success: (data) => {
+            console.log(data)
+        }
+    })
+
+    formContainer = $("#form-container")
+
+    function createForm() {
+        $.get({
+            url: './api/getCategories.php',
+            success: (data) => {
+                formContainer.html(createFormTemplate({categories: data}))
+                console.log(data)
+
+                const addProductForm = $("#addProduct")
+                console.log(addProductForm)
+                addProductForm.on('submit', function (event) {
+                    event.preventDefault()
+
+                    $.post({
+                        url: './api/addItem.php',
+                        data: addProductForm.serialize(),
+                        success: (data) => {
+                            alert(data.response)
+                            createProducts()
+                        }
+                    })
+                })
+            }
+        })
+    }
+
+
+
+    const categoryForm = $("#categoryForm")
+    categoryForm.on('submit', function (event) {
+        event.preventDefault()
+
+        $.post({
+            url: './api/addCategory.php',
+            data: categoryForm.serialize(),
+            success: (data) => {
+                console.log(data)
+                alert(data.response)
+                createForm()
+            }
+        })
+    })
+
+    const ordersContainer = $("#orders-container")
+    function createOrders() {
+        $.get({
+            url: './api/getOrders.php',
+            success: (data) => {
+                let items = []
+                $.get({
+                    url: './api/getItemsWithCategories.php',
+                    success: (data) => {
+                        items = data.reduce((accumulator, currentItem) => {
+                            accumulator[currentItem.product_id] = currentItem
+                            return accumulator
+                        }, {})
+                    },
+                    async: false
+                })
+                data = data.map((item) => {
+                    const product_counts = JSON.parse(item.product_counts)
+                    const product_ids = JSON.parse(item.product_ids)
+
+                    const orderProducts = product_ids.map((id, index) => {
+                        return {name: items[id].name, quantity: product_counts[index]}
+                    })
+
+                    item.is_done = item.is_done !== "0"
+
+                    item.products = orderProducts
+
+                    return item
+                })
+
+                ordersContainer.html(ordersTemplate({orders: data}))
+                hydrateButtons()
+            }
+        })
+
+        function hydrateButtons() {
+            $(".edit-buttons-orders").on('click', function (event) {
+                event.preventDefault()
+
+                $.get({
+                    url: this.href,
+                    success: (data) => {
+                        alert(data.response)
+                        createOrders()
+                    }
+                })
+            })
+
+            $(".delete-buttons-orders").on('click', function (event) {
+                event.preventDefault()
+
+                $.get({
+                    url: this.href,
+                    success: (data) => {
+                        alert(data.response)
+                        $(this).parent().parent().remove()
+                    }
+                })
+            })
+        }
+    }
+
+    createForm()
+    createProducts()
+    createOrders()
+</script>
+</body>
+</html>

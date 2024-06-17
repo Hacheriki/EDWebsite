@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Корзина</title>
+    <link rel="stylesheet" href="cart_styles.css">
+    <script src="scripts/jq.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+</head>
+<body>
+
+<div id="header"></div>
+<h2 class="cart-text">Корзина</h2>
+<table class='cart-table'>
+    <tr><th>Название товара</th><th>Количество</th><th>Цена</th><th></th></tr>
+    </table>
+    <form id="buyForm" action='./api/process_order.php' method='post'>
+    <input required class="phone-number-input" name="client_phone" value="" placeholder="Контактный номер (обязательно)">
+    <input hidden name="total_price" value="">
+    <button type='submit' class='buy-button'>Купить</button>
+    </form>
+
+<script id="cart-item-template" type="text/x-handlebars-template">
+    {{#each cartItems}}
+        <tr>
+            <td>
+                {{name}}
+            </td>
+            <td>
+                {{quantity}}
+            </td>
+            <td class="itemTotalPrice"">
+                {{totalItemPrice}}
+            </td>
+            <td>
+                <form class="deleteForm">
+                    <input hidden value="{{id}}" name="id">
+                    <button class="delete-button" type="submit">Убрать товар</button>
+                </form>
+            </td>
+        </tr>
+    {{/each}}
+    <tr><td colspan='2'><strong>Общая цена</strong></td><td><strong id="totalPrice">{{totalPrice}}</strong></td></tr>
+</script>
+<script>
+    const header = $("#header")
+    const template = Handlebars.compile(document.querySelector('#cart-item-template').innerHTML);
+
+    $.get({
+        url: './header.html',
+        success: function (data) {
+            header.html(data)
+        }
+    })
+
+    const cart = $("table")
+    $.get({
+        url: './api/getCart.php',
+        success: function (data) {
+            console.log(data)
+            cart.append(template({ cartItems: data.products, totalPrice: data.totalPrice}))
+            console.log($("input[name='total_price']"))
+            $("input[name='total_price']").val(data.totalPrice)
+            hydrateDeleteButtons()
+        }
+    })
+
+    const buyForm = $("#buyForm")
+    buyForm.on('submit', function (event) {
+        event.preventDefault()
+
+        $.post({
+            url: './api/processOrder.php',
+            data: buyForm.serialize(),
+            success: (data) => {
+                alert(data.response)
+                document.location.href = './'
+            },
+            error: (err) => {
+                const data = JSON.parse(err.responseText)
+                alert(data.response)
+                document.location.href = './'
+            }
+        })
+    })
+
+    function hydrateDeleteButtons() {
+        const deleteForm = $(".deleteForm")
+        const totalPrice = $("#totalPrice")
+        deleteForm.on('submit', function (event) {
+            event.preventDefault()
+
+            $.get({
+                url: "./api/deleteFromCart.php",
+                data: deleteForm.serialize(),
+                success: (data) => {
+                    const itemContainer = $(this).parent().parent()
+                    console.log(totalPrice)
+                    totalPrice.text(totalPrice.text() - +itemContainer.find(".itemTotalPrice").text())
+                    itemContainer.remove()
+                    alert(data.response)
+                }
+            })
+        })
+    }
+</script>
+</body>
+</html>

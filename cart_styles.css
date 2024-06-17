@@ -1,0 +1,70 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+}
+
+.cart-table {
+    width: 60%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.cart-table th, .cart-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.cart-table th {
+    background-color: #333;
+    color: white;
+    text-align: left;
+}
+
+.cart-table tr:last-child td {
+    border-bottom: none;
+}
+
+.phone-number-input {
+    display: block;
+    width: 400px;
+    margin: 20px auto;
+    background-color: #a6a6a6;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.buy-button {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.buy-button:hover {
+    background-color: #218838;
+}
+
+.cart-text {
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
