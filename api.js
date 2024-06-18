@@ -171,4 +171,73 @@ apiRouter.get('/getCategories', (req, res) => {
     })
 })
 
+apiRouter.post('/addCategory', (req,res) => {
+    connection.query("INSERT INTO categories (name) VALUES (?)", [req.body.category_name], (err, response) => {
+        res.status(200).send(response)
+    })
+})
+
+apiRouter.post('/addItem', (req,res) => {
+    connection.query("INSERT INTO products (name, description, price, category_id, quantity, image_url, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?)", [req.body.name, req.body.description, req.body.price, req.body.category, req.body.quantity, req.body.image_url, req.body.is_featured], (err, response) => {
+        res.status(200).send({response: "Предмет создан"})
+    })
+})
+
+apiRouter.post('/checkPassword', (req, res) => {
+    res.status(200).send({
+        response: req.body.password === "12345678"
+    })
+})
+
+apiRouter.get("/deleteFromCart", (req,res) => {
+    delete req.session.cart[req.query.id]
+
+    res.status(200).send({
+        response: "Успешно удалено!"
+    })
+})
+
+apiRouter.get('/deleteItem', (req, res) => {
+    connection.query("DELETE FROM products WHERE product_id = ?", [req.query.id], (err, result) => {
+        res.status(200).send({
+            response: "Успешно удалено!"
+        })
+    })
+})
+
+apiRouter.get('/deleteOrder', (req, res) => {
+    connection.query("DELETE FROM orders WHERE order_id = ?", [req.query.delete_order], (err, result) => {
+        res.status(200).send({
+            response: "Успешно удалено!"
+        })
+    })
+})
+
+
+apiRouter.post('/editItem', (req, res) => {
+    connection.query("UPDATE products SET name = ?, description = ?, price = ?, category_id = ?, quantity = ?, image_url = ?, is_featured = ? WHERE product_id = ?", [req.body.product_id, req.body.name, req.body.description, req.body.price, req.body.quantity, req.body.category, !req.body.is_featured, ], (err, result) => {
+        res.status(200).send({
+            response: "Успешно обновлено!"
+        })
+    })
+}) //
+
+apiRouter.get('/getItemsWithCategories', (req, res) => {
+    connection.query("SELECT products.*, categories.name AS category_name FROM products LEFT JOIN categories ON products.category_id = categories.category_id", (err, result) => {
+        res.status(200).send(
+            result
+        )
+    })
+})
+
+apiRouter.get('/markOrder', (req, res) => {
+    connection.query("UPDATE orders SET is_done = true WHERE order_id = ?", [req.query.order_to_mark], (err, response) => {
+        res.status(200).send({
+                response: "Успешно обновлено"
+
+        })
+    })
+})
+
+
 module.exports = apiRouter

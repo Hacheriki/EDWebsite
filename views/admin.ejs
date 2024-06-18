@@ -4,25 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ панель</title>
-    <link rel='stylesheet' href='styles.css'>
+    <link rel='stylesheet' href='css/styles.css'>
     <script src="scripts/jq.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 </head>
 <body>
-<div id="header"></div>
-<script>
-    const header = $("#header")
-
-    $.get({
-        url: './header.html',
-        success: function (data) {
-            header.html(data)
-        }
-    })
-</script>
+<%- include('header') %>
 
 <div class="login-container">
-    <form action="./api/checkPassword.php" method="post" class="login-form">
+    <form action="./api/checkPassword" method="post" class="login-form">
         <h2>Вход в админ панель</h2>
         <div class="form-group">
             <label for="password">Пароль:</label>
@@ -37,7 +27,7 @@
 <div id="adminPanel" style="display: none">
     <section class="admin-section">
         <h2>Добавить новую категорию</h2>
-        <form action="add_category.php" method="post" id="categoryForm">
+        <form action="add_category" method="post" id="categoryForm">
             <label for="category_name">Имя категории:</label>
             <input type="text" id="category_name" name="category_name" required><br>
             <input type="submit" name="submit_category" value="Добавить категорию">
@@ -98,7 +88,7 @@
                         <p>Категория: {{category_name}} </p>
                         <div style="display: flex; gap: 2rem">
                             <a href='admin.html?edit={{product_id}}' class='action-button edit-button edit-button-items'>Отредактировать</a>
-                            <a href='./api/deleteItem.php?delete={{product_id}}' class='action-button delete-button delete-button-items'>Удалить</a>
+                            <a href='./api/deleteItem?delete={{product_id}}' class='action-button delete-button delete-button-items'>Удалить</a>
                         </div>
                     </div>
 
@@ -153,9 +143,9 @@
                             <p>Статус заказа: Выполнен</p>
                         {{else}}
                             <p>Статус заказа: В работе</p>
-                            <a href='./api/markOrder.php?mark_order_done={{order_id}}' class='action-button edit-button edit-buttons-orders'>Отметить как выполненный</a>
+                            <a href='./api/markOrder?mark_order_done={{order_id}}' class='action-button edit-button edit-buttons-orders'>Отметить как выполненный</a>
                         {{/if}}
-                        <a href='./api/deleteOrder.php?delete_order={{order_id}}' class='action-button delete-button delete-buttons-orders'>Удалить заказ</a>
+                        <a href='./api/deleteOrder?delete_order={{order_id}}' class='action-button delete-button delete-buttons-orders'>Удалить заказ</a>
                     </div>
                 </div>
             {{/each}}
@@ -170,7 +160,7 @@
         event.preventDefault()
 
         $.post({
-            url: './api/checkPassword.php',
+            url: './api/checkPassword',
             data: loginForm.serialize(),
             success: (data) => {
                 if (data.response) {
@@ -192,11 +182,11 @@
 
     function createProducts() {
         $.get({
-            url: './api/getItemsWithCategories.php',
+            url: './api/getItemsWithCategories',
             success: (data) => {
                 let categories = []
                 $.get({
-                    url: './api/getCategories.php',
+                    url: './api/getCategories',
                     success: (data) => {
                         console.log(data)
                         categories = data
@@ -238,7 +228,7 @@
                 event.preventDefault()
 
                 $.post({
-                    url: './api/editItem.php',
+                    url: './api/editItem',
                     data: $(this).serialize(),
                     success: (data) => {
                         alert(data.response)
@@ -261,7 +251,7 @@
     }
 
     $.get({
-        url: './api/getOrders.php',
+        url: './api/getOrders',
         success: (data) => {
             console.log(data)
         }
@@ -271,7 +261,7 @@
 
     function createForm() {
         $.get({
-            url: './api/getCategories.php',
+            url: './api/getCategories',
             success: (data) => {
                 formContainer.html(createFormTemplate({categories: data}))
                 console.log(data)
@@ -282,7 +272,7 @@
                     event.preventDefault()
 
                     $.post({
-                        url: './api/addItem.php',
+                        url: './api/addItem',
                         data: addProductForm.serialize(),
                         success: (data) => {
                             alert(data.response)
@@ -301,7 +291,7 @@
         event.preventDefault()
 
         $.post({
-            url: './api/addCategory.php',
+            url: './api/addCategory',
             data: categoryForm.serialize(),
             success: (data) => {
                 console.log(data)
@@ -314,11 +304,11 @@
     const ordersContainer = $("#orders-container")
     function createOrders() {
         $.get({
-            url: './api/getOrders.php',
+            url: './api/getOrders',
             success: (data) => {
                 let items = []
                 $.get({
-                    url: './api/getItemsWithCategories.php',
+                    url: './api/getItemsWithCategories',
                     success: (data) => {
                         items = data.reduce((accumulator, currentItem) => {
                             accumulator[currentItem.product_id] = currentItem
