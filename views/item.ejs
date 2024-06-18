@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вещь</title>
+    <link rel="stylesheet" href="css/item_styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+    <script src="scripts/jq.js"></script>
+</head>
+<script id="item-template" type="text/x-handlebars-template">
+    {{#with product}}
+        <h1>{{name}}</h1>
+        <img src="{{image_url}}">
+        <p>{{description}}</p>
+        <p>Цена: {{price}} ₽</p>
+        <p>Оставшееся количество: {{quantity}}</p>
+        <form>
+            <input type="hidden" name="product_id" value="{{product_id}}">
+            <label for="quantity">Количество:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{quantity}}">
+            <input type="submit" value="Добавить в корзину">
+        </form>
+    {{/with}}
+</script>
+<body>
+<%- include('header') %>
+    <main>
+        <div class="product-detail">
+
+        </div>
+    </main>
+</body>
+<script>
+    const template = Handlebars.compile(document.querySelector('#item-template').innerHTML);
+
+    const productDetail = $(".product-detail")
+    $.get({
+        url: './api/getItem',
+        data: {
+            id: new URLSearchParams(window.location.search).get("id")
+        },
+        success: function (data) {
+            console.log(data)
+            productDetail.html(template({ product: data}))
+            hydrateForm()
+        }
+    })
+
+    function hydrateForm() {
+        const addToCartForm = $("form")
+        addToCartForm.on('submit', function (event) {
+            event.preventDefault();
+            console.log(event)
+
+            $.post({
+                url: './api/addToCart',
+                data: addToCartForm.serialize(),
+                success: (data) => {
+                    console.log(data)
+                }
+            })
+        })
+    }
+</script>
+</html>
