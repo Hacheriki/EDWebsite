@@ -6,9 +6,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     $category = "";
     $maxPrice = "";
 
-    if (isset($_GET['category']) && isset($_GET['maxPrice'])) {
-        $category = $_GET['category'];
-        $maxPrice = $_GET['maxPrice'];
+    if (isset($_GET["category"])) {
+        $category = $_GET["category"];
+    }
+
+    if (isset($_GET["maxPrice"])) {
+        $maxPrice = $_GET["maxPrice"];
     }
 
     $sql = "SELECT p.product_id, p.name, p.price, p.image_url FROM products p WHERE p.quantity > 0 ";
